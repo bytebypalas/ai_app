@@ -28,6 +28,10 @@ streamlit
 # PDF Report Generation
 fpdf2
 
+# ML API Backend (React frontend integration)
+fastapi
+uvicorn
+
 # Jupyter for Notebooks (optional)
 jupyter
 jupyterlab

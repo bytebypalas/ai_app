@@ -155,8 +155,9 @@ def estimate_confidence(probabilities, category):
 
     confidence = max_prob * 100 + margin_bonus
 
-    # Cap between 60 and 99
-    return round(min(max(confidence, 60), 99), 2)
+    # FIX: Honest confidence floor (was hardcoded to 60 which is misleading
+    # for uncertain predictions). Now reflects true model uncertainty.
+    return round(min(max(confidence, 30), 99), 2)
 
 
 def predict_student(student_input, model=None, preprocessor=None,
@@ -242,24 +243,30 @@ def predict_student(student_input, model=None, preprocessor=None,
     for i, cls in enumerate(label_encoder.classes_):
         prob_dict[cls] = round(float(probabilities[i]) * 100, 2)
 
-    # Map category to performance metrics
+    # ------------------------------------------------------------------
+    # FIX: Compute predicted percentage from the model's OWN probability
+    # output instead of a hardcoded category->score lookup table.
+    # Each class is mapped to its representative percentage and we take
+    # the probability-weighted expectation:
+    #   pct = sum(p(class_i) * center(class_i))
+    # This makes the percentage a genuine function of the model output.
+    # ------------------------------------------------------------------
+    # Representative percentage per performance category
     category_score_map = {
-        'Excellent': 92,
-        'Good': 78,
-        'Average': 65,
-        'Poor': 45
+        'Excellent': 90,
+        'Good': 75,
+        'Average': 60,
+        'Poor': 40
     }
 
-    # Estimate percentage based on category with some variation
-    base_percentage = category_score_map.get(prediction_category, 65)
-    # Add small variation based on input quality features
-    quality_factor = (
-        student_input.get('Attendance_Percentage', 75) / 100 +
-        student_input.get('Study_Hours_Per_Day', 4) / 12 +
-        student_input.get('Previous_Academic_Marks', 65) / 100
-    ) / 3
-    variation = (quality_factor - 0.65) * 15  # -10 to +10 variation
-    predicted_percentage = round(min(max(base_percentage + variation, 0), 100), 2)
+    predicted_percentage = 0.0
+    for cls, prob in prob_dict.items():
+        p = prob / 100.0
+        center = category_score_map.get(cls, 60)
+        predicted_percentage += p * center
+
+    # Clamp to valid 0-100 range and round
+    predicted_percentage = round(min(max(predicted_percentage, 0), 100), 2)
 
     # Calculate grade
     grade = get_grade(predicted_percentage)

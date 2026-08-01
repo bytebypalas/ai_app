@@ -148,13 +148,57 @@ python src/train_model.py
 
 7. **Run the application**
 ```bash
-streamlit run app/app.py
+streamlit run streamlit_app.py
 ```
 
 ### Quick Start (All Steps)
 ```bash
-python dataset/generate_data.py && python src/data_preprocessing.py && python src/train_model.py && streamlit run app/app.py
+python dataset/generate_data.py && python src/data_preprocessing.py && python src/train_model.py && streamlit run streamlit_app.py
 ```
+
+### Run the ML API (for React frontend)
+
+The **xai-predictor** (React) frontend calls a real FastAPI backend instead of
+simulated calculations. To serve the trained model over HTTP:
+
+```bash
+cd Student_Performance_XAI
+uvicorn api.main:app --reload --port 8000
+# or
+python -m api.main
+```
+
+| Endpoint | Method | Description |
+|---|---|---|
+| `/api/health` | GET | Health check |
+| `/api/predict` | POST | Real prediction + SHAP explanation (JSON body) |
+
+Example request body for `/api/predict`:
+
+```json
+{
+  "Student_Name": "John Doe",
+  "Attendance_Percentage": 85,
+  "Study_Hours_Per_Day": 6,
+  "Previous_Academic_Marks": 78,
+  "Internal_Assessment_Marks": 75,
+  "Assignment_Score": 80,
+  "Practical_Lab_Score": 72,
+  "Number_of_Backlogs": 1,
+  "Previous_Semester_GPA": 7.5,
+  "Sleep_Hours": 7.5,
+  "Internet_Access": 1,
+  "Parental_Education": 2,
+  "Extracurricular_Activities": 1,
+  "Class_Participation": 70,
+  "Assignment_Submission_Rate": 85
+}
+```
+
+The React app (`xai-predictor`) automatically calls this API when it is
+running, and falls back to a **deterministic** local calculation if the API is
+not available. Set `VITE_API_URL` to override the API base URL
+(default: `http://localhost:8000`).
 
 ## 🖥️ Application Pages
 
