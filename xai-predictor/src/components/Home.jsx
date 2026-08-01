@@ -1,14 +1,140 @@
- import React from 'react'
-import { motion } from 'framer-motion'
+import React, { useEffect, useRef, useState } from 'react'
+import { motion, useInView } from 'framer-motion'
 import { performanceDistribution } from '../data/sampleData'
 import { formatNumber } from '../utils/helpers'
 
+/* ===== Unique SVG Icons for Stats ===== */
+const StatIcons = {
+  students: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+      <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+      <path d="M6 12v5c3 3 9 3 12 0v-5" />
+      <path d="M22 10v6" />
+    </svg>
+  ),
+  accuracy: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+      <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
+      <path d="M12 6v6l4 2" />
+      <circle cx="12" cy="12" r="1" fill="currentColor" />
+    </svg>
+  ),
+  features: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+      <rect x="4" y="4" width="16" height="16" rx="2" />
+      <rect x="9" y="9" width="6" height="6" rx="1" />
+      <path d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3" />
+    </svg>
+  ),
+  predictions: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+      <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+      <path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+      <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
+      <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+    </svg>
+  ),
+}
+
+const gradientMap = {
+  'from-indigo-500 to-purple-600': { from: '#6366f1', to: '#a855f7', glow: 'rgba(99,102,241,0.4)' },
+  'from-emerald-500 to-teal-500': { from: '#10b981', to: '#14b8a6', glow: 'rgba(16,185,129,0.4)' },
+  'from-cyan-500 to-blue-600': { from: '#06b6d4', to: '#2563eb', glow: 'rgba(6,182,212,0.4)' },
+  'from-amber-500 to-orange-500': { from: '#f59e0b', to: '#f97316', glow: 'rgba(245,158,11,0.4)' },
+}
+
 const stats = [
-  { label: 'Students Analyzed', value: '1,200+', change: '+12%', gradient: 'from-indigo-500 to-purple-600' },
-  { label: 'Model Accuracy', value: '94.2%', change: '+5.2%', gradient: 'from-emerald-500 to-teal-500' },
-  { label: 'Features Analyzed', value: '14+', change: '+3', gradient: 'from-cyan-500 to-blue-600' },
-  { label: 'Predictions Made', value: '5,800+', change: '+18%', gradient: 'from-amber-500 to-orange-500' },
+  { key: 'students', label: 'Students Analyzed', value: 1200, suffix: '+', change: '+12%', trend: 'up', gradient: 'from-indigo-500 to-purple-600', icon: StatIcons.students },
+  { key: 'accuracy', label: 'Model Accuracy', value: 94.2, suffix: '%', decimals: 1, change: '+5.2%', trend: 'up', gradient: 'from-emerald-500 to-teal-500', icon: StatIcons.accuracy },
+  { key: 'features', label: 'Features Analyzed', value: 14, suffix: '+', change: '+3', trend: 'up', gradient: 'from-cyan-500 to-blue-600', icon: StatIcons.features },
+  { key: 'predictions', label: 'Predictions Made', value: 5800, suffix: '+', change: '+18%', trend: 'up', gradient: 'from-amber-500 to-orange-500', icon: StatIcons.predictions },
 ]
+
+/** Animated count-up number using requestAnimationFrame */
+function AnimatedNumber({ value, decimals = 0, suffix = '' }) {
+  const ref = useRef(null)
+  const inView = useInView(ref, { once: true, margin: '-40px' })
+  const [display, setDisplay] = useState(0)
+
+  useEffect(() => {
+    if (!inView) return
+    let raf
+    const duration = 1600
+    const start = performance.now()
+    const tick = (now) => {
+      const p = Math.min((now - start) / duration, 1)
+      const eased = 1 - Math.pow(1 - p, 3)
+      setDisplay(value * eased)
+      if (p < 1) raf = requestAnimationFrame(tick)
+      else setDisplay(value)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [inView, value])
+
+  const formatted =
+    decimals > 0
+      ? display.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
+      : Math.round(display).toLocaleString('en-US')
+
+  return (
+    <span ref={ref}>
+      {formatted}{suffix}
+    </span>
+  )
+}
+
+/** Aesthetic AI stat card with conic gradient ring + glow + unique icon */
+function StatCard({ stat, index }) {
+  const { key, label, value, suffix, decimals, change, gradient, icon } = stat
+  const colors = gradientMap[gradient]
+
+  return (
+    <motion.div
+      variants={itemVariants}
+      className="stat-card relative group"
+      whileHover={{ y: -6, transition: { duration: 0.25 } }}
+    >
+      {/* Floating glow background */}
+      <div
+        className="stat-glow"
+        style={{ background: `radial-gradient(circle at 30% 20%, ${colors.glow}, transparent 70%)` }}
+      />
+
+      {/* Unique icon in gradient chip */}
+      <div className="relative z-10 mb-4">
+        <div
+          className="w-12 h-12 rounded-2xl mx-auto flex items-center justify-center text-white shadow-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3"
+          style={{ background: `linear-gradient(135deg, ${colors.from}, ${colors.to})`, boxShadow: `0 8px 24px ${colors.glow}` }}
+        >
+          {icon}
+        </div>
+      </div>
+
+      {/* Number */}
+      <div className="relative z-10">
+        <p className="stat-number" style={{ color: colors.from }}>
+          <AnimatedNumber value={value} decimals={decimals} suffix={suffix} />
+        </p>
+
+        {/* Label */}
+        <p className="stat-label">{label}</p>
+
+        {/* Divider */}
+        <div className="my-3 h-px w-12 mx-auto" style={{ background: `linear-gradient(90deg, transparent, ${colors.from}, transparent)` }} />
+
+        {/* Trend row */}
+        <div className="flex items-center justify-center gap-1.5">
+          <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" className={`w-3 h-3 ${change.startsWith('-') ? 'text-rose-400 rotate-180' : 'text-emerald-400'}`}>
+            <path d="M1 9L11 9M6 3v6M6 3L3 6M6 3l3 3" />
+          </svg>
+          <span className={`stat-change ${change.startsWith('-') ? 'text-rose-400' : 'text-emerald-400'}`}>{change}</span>
+          <span className="text-slate-600 text-[10px]">this month</span>
+        </div>
+      </div>
+    </motion.div>
+  )
+}
 
 const features = [
   {
@@ -101,17 +227,10 @@ export default function Home({ onNavigate }) {
           </div>
         </motion.div>
 
-        {/* Stats Grid */}
-        <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-20 max-w-4xl mx-auto">
+        {/* AI Stats Grid */}
+        <motion.div variants={itemVariants} className="ai-stats-grid mt-20 max-w-4xl mx-auto">
           {stats.map((stat, i) => (
-            <div key={i} className="glass rounded-2xl p-5 text-center">
-              <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${stat.gradient} flex items-center justify-center mx-auto mb-3`}>
-                <span className="text-white text-sm font-bold">●</span>
-              </div>
-              <p className="text-2xl md:text-3xl font-bold text-slate-100">{stat.value}</p>
-              <p className="text-xs text-slate-400 mt-1">{stat.label}</p>
-              <p className="text-xs text-emerald-400 mt-0.5">{stat.change}</p>
-            </div>
+            <StatCard key={stat.key} stat={stat} index={i} />
           ))}
         </motion.div>
       </section>

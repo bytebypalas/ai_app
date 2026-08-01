@@ -2,7 +2,6 @@ import React, { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  WaterfallChart,
 } from 'recharts'
 import { featureImportance } from '../data/sampleData'
 import { generateRecommendations, generateExplanation, getPercentageColor } from '../utils/helpers'

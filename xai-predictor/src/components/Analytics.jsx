@@ -80,21 +80,35 @@ export default function Analytics() {
       </motion.div>
 
       {/* Summary Stats */}
-      <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <motion.div variants={itemVariants} className="ai-stats-grid">
         {[
-          { label: 'Total Students', value: '1,200+', change: '+12%', color: 'from-indigo-500 to-purple-600' },
-          { label: 'Avg Attendance', value: '74.3%', change: '+3.2%', color: 'from-emerald-500 to-teal-500' },
-          { label: 'Avg Study Hours', value: '5.2 hrs', change: '+0.8', color: 'from-cyan-500 to-blue-600' },
-          { label: 'Avg GPA', value: '6.8/10', change: '+0.3', color: 'from-amber-500 to-orange-500' },
+          { label: 'Total Students', value: '1,200+', change: '+12%', from: '#6366f1', to: '#a855f7', glow: 'rgba(99,102,241,0.4)' },
+          { label: 'Avg Attendance', value: '74.3%', change: '+3.2%', from: '#10b981', to: '#14b8a6', glow: 'rgba(16,185,129,0.4)' },
+          { label: 'Avg Study Hours', value: '5.2 hrs', change: '+0.8', from: '#06b6d4', to: '#2563eb', glow: 'rgba(6,182,212,0.4)' },
+          { label: 'Avg GPA', value: '6.8/10', change: '+0.3', from: '#f59e0b', to: '#f97316', glow: 'rgba(245,158,11,0.4)' },
         ].map((stat, i) => (
-          <div key={i} className="glass rounded-2xl p-5 text-center">
-            <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${stat.color} flex items-center justify-center mx-auto mb-3`}>
-              <span className="text-white text-sm font-bold">●</span>
+          <motion.div
+            key={i}
+            className="stat-card relative group"
+            whileHover={{ y: -6, transition: { duration: 0.25 } }}
+          >
+            <div
+              className="stat-glow"
+              style={{ background: `radial-gradient(circle at 30% 20%, ${stat.glow}, transparent 70%)` }}
+            />
+            <div className="relative z-10">
+              <p className="stat-number" style={{ color: stat.from }}>{stat.value}</p>
+              <p className="stat-label">{stat.label}</p>
+              <div className="my-3 h-px w-12 mx-auto" style={{ background: `linear-gradient(90deg, transparent, ${stat.from}, transparent)` }} />
+              <div className="flex items-center justify-center gap-1.5">
+                <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-3 h-3 text-emerald-400">
+                  <path d="M1 9L11 9M6 3v6M6 3L3 6M6 3l3 3" />
+                </svg>
+                <span className="stat-change text-emerald-400">{stat.change}</span>
+                <span className="text-slate-600 text-[10px]">this month</span>
+              </div>
             </div>
-            <p className="text-2xl font-bold text-slate-100">{stat.value}</p>
-            <p className="text-xs text-slate-400 mt-1">{stat.label}</p>
-            <p className="text-xs text-emerald-400 mt-0.5">{stat.change}</p>
-          </div>
+          </motion.div>
         ))}
       </motion.div>
 
