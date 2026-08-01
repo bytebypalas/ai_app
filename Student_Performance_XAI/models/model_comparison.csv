@@ -1,0 +1,4 @@
+Model,Accuracy,Precision (Weighted),Recall (Weighted),F1-Score (Weighted)
+Random Forest,1.0,1.0,1.0,1.0
+Logistic Regression,0.9958,0.9959,0.9958,0.9958
+Decision Tree,0.9917,0.9917,0.9917,0.9917

@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+ENV/
+.idea/
+.vscode/
+*.pkl.bak
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# Node / React
+node_modules/
+dist/
+build/
+.vite/
+
+# Streamlit / Runtime
+.streamlit/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Models (large binaries) - optional: uncomment to exclude trained models
+# Student_Performance_XAI/models/*.pkl
+
+# Reports / generated images
+# Student_Performance_XAI/reports/*.png
+

@@ -1,0 +1,34 @@
+# =============================================================================
+# Explainable AI Based Student Academic Performance Prediction
+# Required Libraries
+# =============================================================================
+
+# Core Data Science
+pandas
+numpy
+
+# Visualization
+matplotlib
+seaborn
+plotly
+
+# Machine Learning
+scikit-learn
+xgboost
+
+# Explainable AI
+shap
+
+# Model Persistence
+joblib
+
+# Web Application
+streamlit
+
+# PDF Report Generation
+fpdf2
+
+# Jupyter for Notebooks (optional)
+jupyter
+jupyterlab
+
