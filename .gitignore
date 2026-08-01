@@ -35,3 +35,4 @@ Thumbs.db
 # Reports / generated images
 # Student_Performance_XAI/reports/*.png
 
+.vercel
